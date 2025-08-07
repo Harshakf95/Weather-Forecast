@@ -1,5 +1,6 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://localhost:3001/api';
+const OPENWEATHER_API_KEY = '9241d5480fc48caeb6e28b2db3147bdb'; // Your OpenWeatherMap API key
 
 // DOM Elements
 const cityInput = document.getElementById('city-input');
@@ -53,22 +54,27 @@ document.addEventListener('DOMContentLoaded', () => {
     loadFavorites();
     
     // Set up event listeners
-    searchBtn.addEventListener('click', searchWeather);
-    cityInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            searchWeather();
-        }
-    });
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchWeather);
+    }
     
-    toggleUnitBtn.addEventListener('click', toggleTemperatureUnit);
-    toggleThemeBtn.addEventListener('click', toggleTheme);
+    if (cityInput) {
+        cityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchWeather();
+            }
+        });
+    }
+    
+    if (toggleUnitBtn) {
+        toggleUnitBtn.addEventListener('click', toggleTemperatureUnit);
+    }
+    
+    if (toggleThemeBtn) {
+        toggleThemeBtn.addEventListener('click', toggleTheme);
+    }
     
     // Get weather for current location
-    getWeatherByLocation();
-});
-
-// Default city on load
-document.addEventListener('DOMContentLoaded', () => {
     getWeatherByLocation();
 });
 
@@ -130,60 +136,92 @@ function showError(message) {
     searchBtn.innerHTML = '<i class="fas fa-search"></i>';
 }
 
-// Fetch weather data from OpenWeather API
+// Fetch weather data from OpenWeatherMap API
 async function fetchWeather(city) {
     if (!city) return;
     
     showLoading();
     
     try {
-        // Fetch current weather and forecast from our backend
-        const [currentWeatherResponse, forecastResponse] = await Promise.all([
-            fetch(`${API_BASE_URL}/weather/${encodeURIComponent(city)}`),
-            fetch(`${API_BASE_URL}/forecast/${encodeURIComponent(city)}`)
-        ]);
+        // First, try to find the city using the direct geocoding API
+        const geocodingResponse = await fetch(
+            `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${OPENWEATHER_API_KEY}`
+        );
+        
+        if (!geocodingResponse.ok) {
+            throw new Error('Failed to find the specified location');
+        }
+        
+        const locationData = await geocodingResponse.json();
+        
+        if (!locationData || locationData.length === 0) {
+            throw new Error('Location not found. Please try another city name.');
+        }
+        
+        const { lat, lon, name, country } = locationData[0];
+        
+        // Fetch current weather using coordinates
+        const currentWeatherResponse = await fetch(
+            `${API_BASE_URL}/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`
+        );
         
         if (!currentWeatherResponse.ok) {
             const errorData = await currentWeatherResponse.json();
-            throw new Error(errorData.error || 'City not found');
+            throw new Error(errorData.message || 'Failed to fetch weather data');
         }
+        
+        const currentWeatherData = await currentWeatherResponse.json();
+        
+        // Fetch forecast data
+        const forecastResponse = await fetch(
+            `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`
+        );
         
         if (!forecastResponse.ok) {
             throw new Error('Failed to fetch forecast data');
         }
         
-        const currentWeatherData = await currentWeatherResponse.json();
         const forecastData = await forecastResponse.json();
         
         // Update UI with the fetched data
-        updateCurrentWeather(currentWeatherData);
+        updateCurrentWeather({
+            ...currentWeatherData,
+            // Use the name from geocoding as it might be more accurate
+            name: name,
+            sys: { country: country }
+        });
+        
         updateForecast(forecastData);
         
-        // Save to search history
-        saveToHistory(city);
+        // Save to search history using the standardized name
+        saveToHistory(`${name}, ${country}`);
         
     } catch (error) {
-        console.error('Error fetching weather data:', error);
-        showError(error.message || 'Failed to fetch weather data. Please try again.');
+        showError(error.message || 'An error occurred while fetching weather data');
+        console.error('Error:', error);
     }
 }
 
 // Fetch weather by coordinates
 async function fetchWeatherByCoords(lat, lon) {
     try {
-        const response = await fetch(
-            `${BASE_URL}/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`
+        showLoading();
+        
+        // Fetch current weather by coordinates
+        const currentWeatherResponse = await fetch(
+            `${API_BASE_URL}/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`
         );
         
-        const data = await response.json();
-        updateCurrentWeather(data);
+        if (!currentWeatherResponse.ok) {
+            throw new Error('Failed to fetch weather data for your location');
+        }
         
-        // Update input field
-        cityInput.value = data.name;
+        const currentWeatherData = await currentWeatherResponse.json();
         
+        // Fetch forecast data
         // Fetch forecast
         const forecastResponse = await fetch(
-            `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`
+            `${API_BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`
         );
         
         const forecastData = await forecastResponse.json();

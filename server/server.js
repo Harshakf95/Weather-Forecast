@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
 const fetch = require('node-fetch');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +11,14 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the root directory (one level up from server/)
+app.use(express.static(path.join(__dirname, '..')));
+
+// Serve index.html for the root route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
 
 // Database connection pool
 const pool = mysql.createPool({
@@ -86,14 +95,14 @@ app.get('/api/weather/:city', async (req, res) => {
             `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${apiKey}`
         );
         
-        const responseData = await response.text();
-        console.log('OpenWeatherMap API Response:', response.status, responseData);
-        
         if (!response.ok) {
-            throw new Error(`City not found (${response.status}): ${responseData}`);
+            const errorData = await response.text();
+            console.error('OpenWeatherMap API Error:', response.status, errorData);
+            throw new Error(`City not found (${response.status}): ${errorData}`);
         }
         
         const data = await response.json();
+        console.log('Weather data received for:', data.name);
         res.json(data);
     } catch (error) {
         console.error('Error fetching weather:', error);

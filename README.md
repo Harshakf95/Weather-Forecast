@@ -28,16 +28,16 @@ Before you begin, ensure you have the following:
 
 2. **Configure the Application**
    - Open the `js/script.js` file
-   - Replace `'YOUR_OPENWEATHER_API_KEY'` with your actual OpenWeatherMap API key
+   - Replace `'9241d5480fc48caeb6e28b2db3147bdb'` with your actual OpenWeatherMap API key
 
 3. **Run the Application**
    - Open the `index.html` file in your web browser
    - Or use a local server (recommended):
      ```bash
      # Using Python (if installed)
-     python -m http.server 8000
+     python -m http.server 3000
      ```
-     Then open `http://localhost:8000` in your browser
+     Then open `http://localhost:3000` in your browser
 
 ## How to Use
 
