@@ -1,1 +1,1 @@
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'weather';
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';

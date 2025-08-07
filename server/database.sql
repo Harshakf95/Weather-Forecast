@@ -37,3 +37,5 @@ CREATE TABLE IF NOT EXISTS user_preferences (
 -- Add some initial data (optional)
 -- INSERT IGNORE INTO user_preferences (user_id, temperature_unit, theme) 
 -- VALUES (1, 'celsius', 'light');
+
+select * from search_history;
