@@ -6,6 +6,7 @@
     --card-bg: #ffffff;
     --text-color: #333333;
     --text-light: #7f8c8d;
+    --icon-color: #f1c40f; /* Added for icons */
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --border-radius: 12px;
     --sidebar-width: 280px;
@@ -38,6 +39,7 @@ body {
     --card-bg: #16213e;
     --text-color: #f0f0f0;
     --text-light: #b8b8b8;
+    --icon-color: #e0e0e0; /* Lighter color for icons in dark mode */
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
@@ -83,6 +85,8 @@ h1 {
     border: none;
     font-size: 1rem;
     outline: none;
+    background: var(--card-bg); /* Ensure input background adapts to theme */
+    color: var(--text-color);
 }
 
 #search-btn {
@@ -113,6 +117,7 @@ h1 {
 .weather-info h2 {
     font-size: 2rem;
     margin-bottom: 10px;
+    color: var(--text-color); /* Ensure city name is visible */
 }
 
 .temp {
@@ -124,13 +129,13 @@ h1 {
 
 .weather-description {
     font-size: 1.2rem;
-    color: var(--text-light);
+    color: var(--text-color); /* Changed from --text-light for better contrast */
     text-transform: capitalize;
 }
 
 .weather-icon i {
     font-size: 6rem;
-    color: #f1c40f;
+    color: var(--icon-color); /* Use theme-aware icon color */
 }
 
 /* Weather Details */
@@ -159,7 +164,7 @@ h1 {
 .detail .label {
     display: block;
     font-size: 0.9rem;
-    color: var(--text-light);
+    color: var(--text-color); /* Changed from --text-light for better visibility */
 }
 
 /* Loading and Error States */
@@ -188,9 +193,18 @@ h1 {
     text-align: center;
 }
 
+[data-theme="dark"] .error-message {
+    background-color: #4a1c1c; /* Darker red for dark mode */
+    color: #ff9999; /* Lighter red for text */
+}
+
 .fa-exclamation-triangle {
     color: #c62828;
     margin-right: 10px;
+}
+
+[data-theme="dark"] .fa-exclamation-triangle {
+    color: #ff9999; /* Match error message text color */
 }
 
 /* Forecast Styles */
@@ -216,13 +230,15 @@ h1 {
 .forecast-card {
     text-align: center;
     padding: 15px;
-    background-color: #f8f9fa;
+    background-color: var(--card-bg); /* Changed from #f8f9fa to adapt to theme */
     border-radius: 10px;
+    box-shadow: var(--shadow); /* Added shadow for consistency */
 }
 
 .forecast-day {
     font-weight: bold;
     margin-bottom: 10px;
+    color: var(--text-color); /* Ensure visibility */
 }
 
 .forecast-temp {
@@ -231,10 +247,15 @@ h1 {
     margin: 5px 0;
 }
 
+.forecast-desc {
+    font-size: 0.9rem; /* Slightly smaller for clarity */
+    color: var(--text-color); /* Changed from no color to ensure visibility */
+}
+
 .forecast-icon i {
     font-size: 2rem;
     margin: 10px 0;
-    color: #f1c40f;
+    color: var(--icon-color); /* Use theme-aware icon color */
 }
 
 /* Unit Toggle */
@@ -302,11 +323,12 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: var(--text-color); /* Ensure visibility */
 }
 
 .history-list li:hover,
 .favorites-list li:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(255, 255, 255, 0.1); /* Adjusted for dark mode */
 }
 
 .favorites-list li {
@@ -340,6 +362,10 @@ footer {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
+[data-theme="dark"] footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Adjust for dark mode */
+}
+
 .api-credit {
     margin-top: 10px;
     font-size: 0.8rem;
@@ -354,7 +380,6 @@ footer {
     text-decoration: underline;
 }
 
-/* Responsive Design */
 /* Responsive Design */
 @media (max-width: 1024px) {
     .container {
