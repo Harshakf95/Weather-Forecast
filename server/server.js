@@ -185,6 +185,58 @@ app.delete('/api/favorites/:id', async (req, res) => {
     }
 });
 
+// Geocoding endpoint - convert city name to coordinates
+app.get('/api/geocode', async (req, res) => {
+    const { q } = req.query;
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+    
+    if (!q) {
+        return res.status(400).json({ error: 'Query parameter "q" is required' });
+    }
+    
+    try {
+        const response = await fetch(
+            `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q)}&limit=5&appid=${apiKey}`
+        );
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch geocoding data');
+        }
+        
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error in geocoding:', error);
+        res.status(500).json({ error: error.message || 'Failed to perform geocoding' });
+    }
+});
+
+// Reverse geocoding endpoint - convert coordinates to location name
+app.get('/api/reverse-geocode', async (req, res) => {
+    const { lat, lon } = req.query;
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+    
+    if (!lat || !lon) {
+        return res.status(400).json({ error: 'Both "lat" and "lon" query parameters are required' });
+    }
+    
+    try {
+        const response = await fetch(
+            `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${apiKey}`
+        );
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch reverse geocoding data');
+        }
+        
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error in reverse geocoding:', error);
+        res.status(500).json({ error: error.message || 'Failed to perform reverse geocoding' });
+    }
+});
+
 // Start server
 async function startServer() {
     await testDbConnection();
